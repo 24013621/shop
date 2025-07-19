@@ -7,9 +7,7 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js"></script>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
   <style>
-    * {
-      box-sizing: border-box;
-    }
+    * { box-sizing: border-box; }
     body {
       font-family: 'Inter', sans-serif;
       background-color: #f0f2f5;
@@ -26,27 +24,21 @@
       box-shadow: 0 2px 10px rgba(0,0,0,0.1);
     }
     h1.title {
-      font-size: 12px;
-      font-weight: medium;
+      font-size: 14px;
+      font-weight: 700;
       text-align: center;
-      margin-bottom: 17px;
+      margin-bottom: 10px;
     }
     .shop-header {
       text-align: center;
-      margin-bottom: 35px;
+      margin-bottom: 30px;
     }
-    .shop-header h2 {
-      margin: 0;
-      font-size: 24px;
-    }
-    .shop-header p {
-      margin: 4px 0;
-      font-size: 14px;
-    }
+    .shop-header h2 { margin: 0; font-size: 24px; }
+    .shop-header p { margin: 4px 0; font-size: 14px; }
     .info-row {
       display: flex;
       justify-content: space-between;
-      margin-bottom: 20px;
+      margin-bottom: 10px;
     }
     .info-column {
       width: 48%;
@@ -56,7 +48,7 @@
       display: block;
       margin-bottom: 5px;
     }
-    input, textarea {
+    input {
       width: 100%;
       padding: 8px;
       font-size: 14px;
@@ -71,9 +63,9 @@
     }
     th, td {
       border: 1px solid #ccc;
-      padding: 10px;
+      padding: 5px;
       text-align: center;
-      font-size: 14px;
+      font-size: 12px;
     }
     th {
       background-color: #f8f9fa;
@@ -92,13 +84,11 @@
       border-radius: 5px;
       cursor: pointer;
       color: #fff;
+      transition: background 0.3s ease;
     }
-    #addRow {
-      background-color: #007bff;
-    }
-    #printInvoice {
-      background-color: #28a745;
-    }
+    #addRow { background-color: #007bff; }
+    #printInvoice { background-color: #28a745; }
+    button:hover { opacity: 0.9; }
     .summary {
       text-align: right;
       margin-top: 20px;
@@ -111,6 +101,13 @@
       font-weight: 600;
       color: #666;
     }
+    @media print {
+      .buttons { display: none; }
+      input, button {
+        visibility: hidden;
+        height: 0;
+      }
+    }
   </style>
 </head>
 <body>
@@ -121,7 +118,7 @@
     <h2>SHA AUTOMOBILES</h2>
     <p>63 A, Bazzar Street, Belur - 636104</p>
     <p>Vazhapadi (Tk), Salem (Dt)</p>
-    <p>GSTIN: 33BHSPR2727P1ZJ</p>
+    <p>GSTIN: 33BHSPR2727P1Z</p>
   </div>
 
   <div class="info-row">
@@ -140,22 +137,22 @@
 
   <table id="itemsTable">
     <thead>
-    <tr>
-      <th>S.No</th>
-      <th>Item</th>
-      <th>Qty</th>
-      <th>Rate</th>
-      <th>Amount</th>
-    </tr>
+      <tr>
+        <th>S.No</th>
+        <th>Item</th>
+        <th>Qty</th>
+        <th>Rate</th>
+        <th>Amount</th>
+      </tr>
     </thead>
     <tbody id="itemsBody">
-    <tr>
-      <td>1</td>
-      <td><input type="text" class="itemName"></td>
-      <td><input type="number" class="itemQty" value="1"></td>
-      <td><input type="number" class="itemRate" value="0"></td>
-      <td><input type="number" class="itemAmount" value="0" readonly></td>
-    </tr>
+      <tr>
+        <td>1</td>
+        <td><input type="text" class="itemName"></td>
+        <td><input type="number" class="itemQty" value="1"></td>
+        <td><input type="number" class="itemRate" value="0"></td>
+        <td><input type="number" class="itemAmount" value="0" readonly></td>
+      </tr>
     </tbody>
   </table>
 
@@ -165,16 +162,16 @@
   </div>
 
   <div class="summary">Total (Inclusive GST): ₹ <span id="totalAmount">0.00</span></div>
-
-  <div class="note">Note: Warranty as per manufacturer</div>
+  <div class="note">Note: Warranty as per manufacturer.</div>
 </div>
 
 <script>
   document.addEventListener('DOMContentLoaded', () => {
     const today = new Date();
     document.getElementById('invoiceDate').valueAsDate = today;
-    let storedNo = localStorage.getItem('invoiceNo');
-    if (storedNo) document.getElementById('invoiceNumber').value = storedNo;
+
+    let storedNo = localStorage.getItem('invoiceNo') || 1;
+    document.getElementById('invoiceNumber').value = storedNo;
   });
 
   function calculateTotal() {
@@ -212,6 +209,7 @@
   attachEvents();
 
   document.getElementById('printInvoice').onclick = () => {
+    calculateTotal();
     const { jsPDF } = window.jspdf;
     const doc = new jsPDF();
     let y = 15;
@@ -252,12 +250,23 @@
     doc.autoTable({
       startY: y + 10,
       head: [['S.No', 'Item', 'Qty', 'Rate', 'Amount']],
-      body: items
+      body: items,
+      styles: {
+        fontSize: 9,
+        cellPadding: 2,
+      },
+      headStyles: {
+        fillColor: [230, 230, 230],
+        textColor: 20,
+        fontSize: 9
+      }
     });
 
     let total = document.getElementById('totalAmount').textContent;
     doc.setFont(undefined, 'bold');
     doc.text(`Total (Inclusive GST): ₹ ${total}`, 200, doc.lastAutoTable.finalY + 10, { align: 'right' });
+
+    doc.setFont(undefined, 'normal');
     doc.text("Note: Warranty as per manufacturer.", 10, doc.lastAutoTable.finalY + 20);
 
     const filename = `Invoice_${invoiceNo}_ShaAutomobiles.pdf`;
@@ -265,10 +274,10 @@
 
     setTimeout(() => {
       window.print();
-      const nextNo = parseInt(invoiceNo) + 1;
-      localStorage.setItem('invoiceNo', nextNo);
-      document.getElementById('invoiceNumber').value = nextNo;
-    }, 600);
+    }, 100);
+
+    const nextNo = parseInt(invoiceNo) + 1;
+    localStorage.setItem('invoiceNo', nextNo);
   };
 </script>
 </body>
